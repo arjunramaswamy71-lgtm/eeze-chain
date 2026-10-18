@@ -1,0 +1,10 @@
+{
+  "name": "eeze-contracts",
+  "private": true,
+  "scripts": {
+    "build": "asc assembly/rwa.ts -o build/rwa.wasm -t build/rwa.wat --runtime stub -O3"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.28.20"
+  }
+}

@@ -1,0 +1,17 @@
+[package]
+name = "eeze_core"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+blake3 = "1.8.7"
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+hex = "0.4.3"
+rand_core = { version = "0.6", features = ["getrandom"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+thiserror = "2.0.21"
+wasmi = "2.0.0"
+
+[dev-dependencies]
+wat = "1.262.0"

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EEZE Chain</title>
+    <meta name="description" content="Explorer and wallet for EEZE Chain and its coin, CoTdy (CTDY)." />
+    <link rel="icon" href="brand/eeze-chain-icon.svg" />
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" id="brand" href="#/" aria-label="EEZE Chain home"></a>
+      <nav aria-label="Main">
+        <a href="#/">Live chain</a>
+        <a href="#/blocks">Blocks</a>
+        <a href="#/wallet">Wallet</a>
+        <a href="#/assets">Assets</a>
+        <a href="#/validators">Validators</a>
+      </nav>
+      <button class="node-pill" id="node-pill" type="button" title="Change which node this page talks to">
+        <span class="dot" id="node-dot"></span><span id="node-label">connecting</span>
+      </button>
+    </header>
+    <main id="view" tabindex="-1"></main>
+    <footer class="foot">
+      <p>
+        EEZE Chain is a student project for learning. CoTdy (CTDY) has no real-world value and is never sold.
+        <a href="https://github.com/arjunramaswamy71-lgtm/eeze-chain">Source code</a>
+      </p>
+    </footer>
+    <dialog id="node-dialog">
+      <form method="dialog" id="node-form">
+        <label for="node-url">Node address</label>
+        <input id="node-url" type="url" placeholder="http://127.0.0.1:8001" required />
+        <p class="hint">Start one with <code>eeze node --mine --key seed:arjun</code>, then use its API port.</p>
+        <div class="row">
+          <button value="cancel" formnovalidate class="ghost">Cancel</button>
+          <button value="ok">Connect</button>
+        </div>
+      </form>
+    </dialog>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
