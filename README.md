@@ -1,4 +1,9 @@
-<p align="center"><img src="web/public/brand/eeze-chain-logo-on-light.svg" alt="EEZE Chain" width="420"></p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="web/public/brand/eeze-chain-logo-on-dark.svg">
+    <img src="web/public/brand/eeze-chain-logo-on-light.svg" alt="EEZE Chain" width="420">
+  </picture>
+</p>
 
 # EEZE Chain
 
