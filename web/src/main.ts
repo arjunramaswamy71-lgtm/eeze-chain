@@ -5,6 +5,7 @@ import "@fontsource/public-sans/600.css";
 import "@fontsource/public-sans/700.css";
 import "./style.css";
 import { createHero, type Hero } from "./hero3d";
+import { createCoin } from "./coin3d";
 import logo from "./logo.svg?raw";
 import { Wallet, signTx, parseCtdy, fmtCtdy, callData, unhex, hex, addressOf, type Kind, type Arg } from "./chain";
 import { demo } from "./backend";
@@ -814,6 +815,59 @@ async function validatorsView() {
     <p class="muted after">Signing two blocks for one turn, or voting for two blocks at one height, costs a validator half its stake. Anyone can submit the proof and gets a tenth of what's taken.</p>`;
 }
 
+// ---------------------------------------------------------------- CoTdy, the coin
+
+let coinScene: { dispose(): void } | null = null;
+
+async function cotdyView() {
+  const st = await api("/status").catch(() => null);
+  view.innerHTML = `
+    <section class="band coinhero" aria-label="The CoTdy coin">
+      <div class="coin-in">
+        <div class="coin-copy">
+          <h1>CoTdy</h1>
+          <p class="tagline">Loyal to the last block.</p>
+          <p class="lede">The coin of EEZE Chain, named after my two dogs, Coco and Teddy. Co plus Tdy. Every payment, every stake and every vote on the chain is counted in it.</p>
+          <div class="row"><a class="btn" href="#/wallet">Hold some in the wallet</a><a class="btn quiet" href="#/cotdy" id="to-story">Read the story</a></div>
+        </div>
+        <div class="coin-stage" id="coin"><p class="coin-hint">Drag the coin to flip it.</p></div>
+      </div>
+    </section>
+
+    <section class="faces">
+      <h2>The faces on the coin</h2>
+      <div class="dogs">
+        <figure><img src="brand/coco.webp" alt="Coco, a small white Pomeranian with pointed ears" width="413" height="364" /><figcaption><b>Coco</b>The white one. The Co in CoTdy.</figcaption></figure>
+        <figure><img src="brand/teddy.webp" alt="Teddy, a fluffy orange Pomeranian" width="450" height="329" /><figcaption><b>Teddy</b>The fluffy orange one. The Tdy in CoTdy.</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="story" id="story">
+      <h2>The story</h2>
+      <p>Every chain needs a coin, and every coin needs a face. Bitcoin has none. Dogecoin borrowed one from a meme. When I built EEZE Chain I didn't have to look far: Coco and Teddy were right there, in my arms.</p>
+      <p>So the coin got their names. Co from Coco, Tdy from Teddy. CoTdy, ticker CTDY. Heads is the two of them, struck in gold. Tails is the chain.</p>
+      <p>The line on the coin fits them too. A good dog sticks with you, whatever happens. That's what a blockchain should do with your money: once validators vote a block final, it stays final. Nobody can rewrite it, however much computing power they bring. Loyal to the last block.</p>
+      <p>One promise: CoTdy is never sold. It has no price and it never will. It exists so anyone can see how a real chain works, and so two good dogs get to be on a coin.</p>
+    </section>
+
+    <section class="coin-facts">
+      <h2>The coin</h2>
+      <dl class="kv">
+        <div><dt>Name and ticker</dt><dd>CoTdy, CTDY</dd></div>
+        <div><dt>Smallest amount</dt><dd>0.00000001 CTDY</dd></div>
+        <div><dt>How new CoTdy appears</dt><dd>50 CTDY for each mined block, then 10 CTDY for each staked block, paid to whoever made it</dd></div>
+        ${st ? `<div><dt>In existence right now</dt><dd>${ctdy(st.supply)}</dd></div>
+        <div><dt>Locked by validators</dt><dd>${ctdy(st.staked)}</dd></div>
+        <div><dt>Destroyed for cheating</dt><dd>${ctdy(st.burned)}</dd></div>` : ""}
+        <div><dt>Price</dt><dd>None. It's never sold, and never will be.</dd></div>
+      </dl>
+      <p class="after">Want the coin for a profile picture or a post? <a href="brand/cotdy-heads-512.png" download>Heads</a> and <a href="brand/cotdy-tails-512.png" download>tails</a>, 512 pixels, transparent.</p>
+    </section>`;
+  $("#to-story").onclick = (e) => { e.preventDefault(); $("#story").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); };
+  coinScene = createCoin($("#coin"));
+  if (!coinScene) $("#coin").innerHTML = `<img class="coin-flat" src="brand/cotdy-heads-512.png" alt="The CoTdy coin: Coco and Teddy struck in gold" />`;
+}
+
 // ---------------------------------------------------------------- how it works
 
 function aboutView() {
@@ -860,6 +914,8 @@ function aboutView() {
 async function route() {
   live?.hero?.dispose();
   live = null;
+  coinScene?.dispose();
+  coinScene = null;
   if (labTimer) { window.clearInterval(labTimer); labTimer = null; }
   const parts = location.hash.replace(/^#\/?/, "").split("/");
   view.setAttribute("aria-busy", "true");
@@ -869,7 +925,7 @@ async function route() {
   });
   $("#nav-lab").hidden = MODE !== "demo";
   try {
-    if (!(await refreshStatus()) && parts[0] !== "wallet") {
+    if (!(await refreshStatus()) && parts[0] !== "wallet" && parts[0] !== "cotdy" && parts[0] !== "about") {
       view.innerHTML = offline();
       return;
     }
@@ -884,6 +940,7 @@ async function route() {
       case "assets": if (parts[1]) await assetView(parts[1]); else await assetsView(); break;
       case "validators": await validatorsView(); break;
       case "about": aboutView(); break;
+      case "cotdy": await cotdyView(); break;
       default: view.innerHTML = `<h1>Nothing on this page</h1><p><a href="#/">Go back to the live chain</a></p>`;
     }
   } catch (e) {
