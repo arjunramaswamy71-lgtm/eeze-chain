@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    name: Rust (format, lint, tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            .
+            wasm
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build the smart contracts
+        working-directory: contracts
+        run: npm ci && npm run build
+
+      - name: Format
+        run: |
+          cargo fmt --all --check
+          (cd wasm && cargo fmt --check)
+
+      - name: Lint
+        run: |
+          cargo clippy --release --all-targets -- -D warnings
+          (cd wasm && cargo clippy --release --all-targets -- -D warnings)
+
+      - name: Tests (core, node)
+        run: cargo test --release
+
+      - name: Tests (in-browser network and one simulated hour of chaos)
+        working-directory: wasm
+        run: cargo test --release
+
+      - name: Build for the browser
+        working-directory: wasm
+        run: cargo build --release --lib --target wasm32-unknown-unknown
+
+  web:
+    name: Wallet and explorer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Type-check and build
+        working-directory: web
+        run: npm ci && npm run build
