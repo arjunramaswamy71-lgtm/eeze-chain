@@ -215,7 +215,10 @@ async function tickLive() {
   if (!live || !document.getElementById("now")) return;
   const [st, blocks] = await Promise.all([refreshStatus(), api("/blocks?limit=26").catch(() => null)]);
   if (!st || !blocks || !live) return;
-  const nodes = MODE === "demo" ? demo.overview().nodes.map((n: Json) => ({ name: n.name, height: n.height, online: n.online, hidden: n.group === 9 })) : [];
+  const ov = MODE === "demo" ? demo.overview() : null;
+  const nodes = ov ? ov.nodes.map((n: Json) => ({ name: n.name, height: n.height, online: n.online, hidden: n.group === 9 })) : [];
+  const seen = ov?.nodes[demo.view];
+  const ahead = ov ? Math.max(0, ...ov.nodes.filter((n: Json) => n.online && n.group !== 9).map((n: Json) => n.height)) : 0;
   live.hero?.update(blocks, nodes);
   if (live.fallback) live.fallback.innerHTML = blocks.slice().reverse().map(plate).join("");
 
@@ -231,7 +234,8 @@ async function tickLive() {
         ? `Miners are racing for each block. In ${toPos} blocks, validators take over and blocks start being stamped final.`
         : st.consensus === "proof-of-stake"
           ? "Waiting for validators to vote a block final."
-          : "Mining carries on until someone stakes enough CoTdy to become a validator."}</p>`;
+          : "Mining carries on until someone stakes enough CoTdy to become a validator."}</p>
+    ${seen && !seen.online ? `<p><strong>${esc(seen.name)} is switched off</strong>, so this is its last copy of the chain. The nodes still running are at #${ahead}. <a href="#/lab">Turn it back on</a>.</p>` : ""}`;
 
   $("#facts").innerHTML = `
     <div><dt>How blocks are made</dt><dd>${st.consensus === "proof-of-stake" ? "Staking" : `Mining, ${st.difficulty_bits} zero bits`}</dd></div>
