@@ -4112,27 +4112,58 @@ void main() {
         <div class="coin-copy">
           <h1>CoTdy</h1>
           <p class="tagline">Loyal to the last block.</p>
-          <p class="lede">The coin of EEZE Chain, named after my two dogs, Coco and Teddy. Co plus Tdy. Every payment, every stake and every vote on the chain is counted in it.</p>
-          <div class="row"><a class="btn" href="#/wallet">Hold some in the wallet</a><a class="btn quiet" href="#/cotdy" id="to-story">Read the story</a></div>
+          <p class="lede">Two dogs, one ledger, zero bribes. CoTdy is the coin of EEZE Chain, named after Coco and Teddy: the guards who once stopped a 51% attack by eating the evidence.</p>
+          <div class="row"><a class="btn" href="#/wallet">Hold some in the wallet</a><a class="btn quiet" href="#/cotdy" id="to-story">Read what happened</a></div>
         </div>
         <div class="coin-stage" id="coin"><p class="coin-hint">Drag the coin to flip it.</p></div>
       </div>
     </section>
 
     <section class="faces">
-      <h2>The faces on the coin</h2>
+      <h2>The guards</h2>
       <div class="dogs">
-        <figure><img src="brand/coco.webp" alt="Coco, a small white Pomeranian with pointed ears" width="413" height="364" /><figcaption><b>Coco</b>The white one. The Co in CoTdy.</figcaption></figure>
-        <figure><img src="brand/teddy.webp" alt="Teddy, a fluffy orange Pomeranian" width="450" height="329" /><figcaption><b>Teddy</b>The fluffy orange one. The Tdy in CoTdy.</figcaption></figure>
+        <figure>
+          <img src="brand/coco.svg" alt="Coco, a white cartoon Pomeranian with tall ears, one eyebrow raised, deeply unimpressed" width="400" height="400" />
+          <figcaption><b>Coco</b><span class="role">Head of security. The brains.</span>
+            <dl class="rap">
+              <div><dt>Loyalty</dt><dd>100%</dd></div>
+              <div><dt>Bribes accepted</dt><dd>0</dd></div>
+              <div><dt>Longest she has looked at a tennis ball</dt><dd>11 minutes</dd></div>
+              <div><dt>Facial expressions</dt><dd>1</dd></div>
+            </dl>
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="brand/teddy.svg" alt="Teddy, a round orange cartoon Pomeranian with huge panicked eyes and a sweat drop" width="400" height="400" />
+          <figcaption><b>Teddy</b><span class="role">Security, technically. Panics professionally.</span>
+            <dl class="rap">
+              <div><dt>Loyalty</dt><dd>100%</dd></div>
+              <div><dt>Hard drives eaten</dt><dd>3</dd></div>
+              <div><dt>Private keys eaten</dt><dd>1, all 24 words</dd></div>
+              <div><dt>Plans</dt><dd>None, ever</dd></div>
+            </dl>
+          </figcaption>
+        </figure>
       </div>
     </section>
 
     <section class="story" id="story">
-      <h2>The story</h2>
-      <p>Every chain needs a coin, and every coin needs a face. Bitcoin has none. Dogecoin borrowed one from a meme. When I built EEZE Chain I didn't have to look far: Coco and Teddy were right there, in my arms.</p>
-      <p>So the coin got their names. Co from Coco, Tdy from Teddy. CoTdy, ticker CTDY. Heads is the two of them, struck in gold. Tails is the chain.</p>
-      <p>The line on the coin fits them too. A good dog sticks with you, whatever happens. That's what a blockchain should do with your money: once validators vote a block final, it stays final. Nobody can rewrite it, however much computing power they bring. Loyal to the last block.</p>
-      <p>One promise: CoTdy is never sold. It has no price and it never will. It exists so anyone can see how a real chain works, and so two good dogs get to be on a coin.</p>
+      <h2>The night the chain almost broke</h2>
+      <ol class="chapters">
+        <li><h3>The job</h3>
+          <p>Coco and Teddy guard Block #0 of EEZE Chain, the very first page of the ledger. The pay is one treat per block. Coco reads every transaction that comes through. Teddy has never read anything, but he has eaten three hard drives and a stapler, and nobody has ever tried to rob him twice.</p></li>
+        <li><h3>3:07 a.m.</h3>
+          <p>A stranger in a hoodie walks in with 51% of all the computers in the world and a second version of history, one where none of it happened. Not the payments. Not the blocks. Not the treats. "Legally," he says, "you were never paid." Teddy begins to grieve, loudly, and does not stop for forty minutes.</p></li>
+        <li><h3>The Orphanage</h3>
+          <p>The stranger's fake chain is longer, so for one terrible hour it wins. Coco and Teddy are blamed for a double spend they didn't do and thrown into the Orphanage, where blocks with no parent go to be forgotten. It's cold. It smells like 2017. An old block in the corner tells them about a man called Satoshi who built the first chain, then vanished and was never seen again. Teddy asks if Satoshi was also a good boy. Nobody answers.</p></li>
+        <li><h3>Teddy panics</h3>
+          <p>On the way out, Teddy panics and eats the first thing he sees: a slip of paper with the stranger's private key on it. All 24 words. "That," says Coco, without blinking, "is cold storage." The stranger can't sign anything now. His fake chain stops growing, because the only way to add to it is inside a four-kilo Pomeranian.</p></li>
+        <li><h3>The vote</h3>
+          <p>With no new blocks, the fake history stalls, and the honest validators keep voting on the real one. At block #4,096, more than two thirds of them sign. The real ledger is stamped final, and on EEZE Chain final means nobody can rewrite it, not with every computer on Earth. The stranger tries one last thing. He offers Coco a tennis ball. She looks at it for eleven minutes. Then she says no.</p></li>
+        <li><h3>Two days later</h3>
+          <p>The 24 words came back out. Nobody was willing to check them. The stranger's coins are lost forever, which is the closest thing crypto has to justice. Coco and Teddy went back to Block #0 and got their back pay, with interest, and every coin on the chain now carries their faces. That coin is CoTdy.</p></li>
+      </ol>
+      <p class="moral">Loyal to the last block.</p>
     </section>
 
     <section class="coin-facts">
@@ -4144,7 +4175,7 @@ void main() {
         ${i?`<div><dt>In existence right now</dt><dd>${ce(i.supply)}</dd></div>
         <div><dt>Locked by validators</dt><dd>${ce(i.staked)}</dd></div>
         <div><dt>Destroyed for cheating</dt><dd>${ce(i.burned)}</dd></div>`:""}
-        <div><dt>Price</dt><dd>None. It's never sold, and never will be.</dd></div>
+        <div><dt>Price</dt><dd>Priceless, literally: it's never sold, and never will be.</dd></div>
       </dl>
       <p class="after">Want the coin for a profile picture or a post? <a href="brand/cotdy-heads-512.png" download>Heads</a> and <a href="brand/cotdy-tails-512.png" download>tails</a>, 512 pixels, transparent.</p>
     </section>`,ht("#to-story").onclick=t=>{t.preventDefault(),ht("#story").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})},Wr=_g(ht("#coin")),Wr||(ht("#coin").innerHTML='<img class="coin-flat" src="brand/cotdy-heads-512.png" alt="The CoTdy coin: Coco and Teddy struck in gold" />')}function C_(){ae.innerHTML=`<article class="about">

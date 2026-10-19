@@ -334,11 +334,21 @@ dialog .row { margin-top: 16px; justify-content: flex-end; }
 .dogs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; border: 1.5px solid var(--ink); background: var(--sheet); }
 .dogs figure { margin: 0; padding: 22px 22px 18px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .dogs figure + figure { border-left: 1px solid var(--rule); }
-.dogs img { width: 100%; max-width: 300px; height: 230px; object-fit: contain; }
+.dogs img { width: 100%; max-width: 240px; height: 240px; object-fit: contain; }
+.dogs .role { display: block; margin-bottom: 10px; }
+.rap { text-align: left; border-top: 4px double var(--red); font-size: 0.88rem; width: min(100%, 330px); margin: 0 auto; }
+.rap > div { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px solid var(--rule); }
+.rap dt { color: var(--ink-2); }
+.rap dd { margin: 0; font-weight: 700; color: var(--ink); text-align: right; }
 .dogs figcaption { text-align: center; color: var(--ink-2); font-size: 0.95rem; }
 .dogs figcaption b { display: block; font-family: var(--display); font-stretch: 118%; font-size: 1.5rem; color: var(--ink); }
 .story p { max-width: 64ch; font-size: 1.05rem; }
-.story p:last-child { border-left: 4px double var(--red); padding-left: 14px; }
+.chapters { list-style: none; counter-reset: ch; padding: 0; margin: 0; max-width: 70ch; }
+.chapters li { counter-increment: ch; position: relative; padding: 0 0 6px 64px; border-top: 1px solid var(--rule); padding-top: 16px; }
+.chapters li::before { content: counter(ch); position: absolute; left: 0; top: 10px; font-family: var(--display); font-stretch: 125%; font-weight: 850; font-size: 2.6rem; line-height: 1; color: var(--red); }
+.chapters h3 { margin: 0 0 6px; font-size: 1.15rem; }
+.chapters p { margin-bottom: 10px; }
+.moral { display: inline-block; margin-top: 18px; font-family: var(--display); font-stretch: 120%; font-weight: 850; font-size: clamp(1.4rem, 3.4vw, 2.1rem); color: var(--red); border: 3px solid var(--red); padding: 4px 16px; transform: rotate(-2deg); }
 @media (max-width: 860px) {
   .coin-in { grid-template-columns: minmax(0, 1fr); min-height: 0; }
   .coin-copy { padding: 36px 0 0; }

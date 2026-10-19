@@ -23,7 +23,7 @@ No install. The page runs a real six-node EEZE Chain network inside your browser
 
 <p align="center"><img src="media/cotdy-coin.png" alt="The CoTdy coin: Coco and Teddy struck in gold, with LOYAL TO THE LAST BLOCK around the edge" width="300"></p>
 
-**Loyal to the last block.** EEZE Chain's coin is named after my two dogs, Coco and Teddy: Co plus Tdy. Heads is the two of them, struck in gold from a real photo; tails is the chain. On the site it's a 3D coin you can flip.
+**Loyal to the last block.** EEZE Chain's coin is named after my two dogs, Coco and Teddy: Co plus Tdy. Heads is the two of them, struck in gold from a real photo; tails is the chain. On the site it's a 3D coin you can flip, next to the story of the night Coco and Teddy stopped a 51% attack by eating the evidence.
 
 A good dog sticks with you, whatever happens, and that's what a blockchain should do with your money: once a block is final, it stays final. CoTdy is never sold and has no price. It exists to show how a real chain works, and so two good dogs get to be on a coin.
 
