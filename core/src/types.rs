@@ -107,11 +107,16 @@ impl PubKey {
 }
 
 /// A wallet key. Only the owner ever holds this.
+#[derive(Clone)]
 pub struct Keypair(pub SigningKey);
 
 impl Keypair {
+    #[cfg(feature = "os-rng")]
     pub fn generate() -> Self {
         Keypair(SigningKey::generate(&mut rand_core::OsRng))
+    }
+    pub fn from_secret(bytes: [u8; 32]) -> Self {
+        Keypair(SigningKey::from_bytes(&bytes))
     }
     pub fn from_secret_hex(s: &str) -> Result<Self, String> {
         let raw = hex::decode(s.trim().trim_start_matches("0x")).map_err(|e| e.to_string())?;
@@ -120,7 +125,9 @@ impl Keypair {
     }
     /// Same key every time for the same word. Only for tests and the local demo network.
     pub fn from_seed(word: &str) -> Self {
-        Keypair(SigningKey::from_bytes(&hash_with("EEZE-DEV-SEED", word.as_bytes()).0))
+        Keypair(SigningKey::from_bytes(
+            &hash_with("EEZE-DEV-SEED", word.as_bytes()).0,
+        ))
     }
     pub fn secret_hex(&self) -> String {
         hex::encode(self.0.to_bytes())
@@ -133,6 +140,150 @@ impl Keypair {
     }
     pub fn sign(&self, msg: &[u8]) -> Sig {
         Sig(self.0.sign(msg).to_bytes())
+    }
+    /// This wallet's VRF key, made from the same secret. Validators register its public half.
+    pub fn vrf(&self) -> VrfKey {
+        let seed = hash_with("EEZE-VRF-KEY", &self.0.to_bytes());
+        let mini = schnorrkel::MiniSecretKey::from_bytes(&seed.0).expect("32 bytes");
+        VrfKey(mini.expand_to_keypair(schnorrkel::ExpansionMode::Ed25519))
+    }
+}
+
+// ---------------------------------------------------------------- VRF
+//
+// A VRF is a lottery ticket nobody can forge or reroll. Given an input, a validator's key gives
+// exactly one output, plus a proof anyone can check against the validator's public VRF key.
+// Each staking block reveals one, and it gets mixed into the chain's randomness. So the producer
+// can't try thousands of block variations to steer who goes next, which they could when the pick
+// came from the block hash.
+
+pub struct VrfKey(schnorrkel::Keypair);
+
+/// Randomness for the VRF proof itself. The transcript already mixes in the secret key and the
+/// input, so a fixed stream here still gives safe, repeatable proofs (like RFC 6979 does for ECDSA).
+struct FixedRng(u64);
+impl rand_core::RngCore for FixedRng {
+    fn next_u32(&mut self) -> u32 {
+        self.next_u64() as u32
+    }
+    fn next_u64(&mut self) -> u64 {
+        self.0 = self.0.wrapping_add(0x9E37_79B9_7F4A_7C15);
+        self.0
+    }
+    fn fill_bytes(&mut self, dest: &mut [u8]) {
+        for chunk in dest.chunks_mut(8) {
+            let v = self.next_u64().to_le_bytes();
+            chunk.copy_from_slice(&v[..chunk.len()]);
+        }
+    }
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
+        self.fill_bytes(dest);
+        Ok(())
+    }
+}
+impl rand_core::CryptoRng for FixedRng {}
+
+fn vrf_transcript(input: &[u8]) -> merlin::Transcript {
+    schnorrkel::signing_context(b"EEZE-VRF").bytes(input)
+}
+
+impl VrfKey {
+    pub fn public(&self) -> PubKey {
+        PubKey(self.0.public.to_bytes())
+    }
+    /// Returns (pre-output, proof, output).
+    pub fn prove(&self, input: &[u8]) -> (Hash, Sig, Hash) {
+        let extra = schnorrkel::context::attach_rng(merlin::Transcript::new(b"VRF"), FixedRng(1));
+        let (io, proof, _) = self.0.vrf_sign_extra(vrf_transcript(input), extra);
+        let out: [u8; 32] = io.make_bytes(b"EEZE-VRF-OUT");
+        (
+            Hash(io.to_preout().to_bytes()),
+            Sig(proof.to_bytes()),
+            Hash(out),
+        )
+    }
+}
+
+/// Checks a VRF proof and gives back the output it proves.
+pub fn vrf_verify(key: &PubKey, input: &[u8], preout: &Hash, proof: &Sig) -> Option<Hash> {
+    let pk = schnorrkel::PublicKey::from_bytes(&key.0).ok()?;
+    let pre = schnorrkel::vrf::VRFPreOut::from_bytes(&preout.0).ok()?;
+    let pr = schnorrkel::vrf::VRFProof::from_bytes(&proof.0).ok()?;
+    let (io, _) = pk.vrf_verify(vrf_transcript(input), &pre, &pr).ok()?;
+    Some(Hash(io.make_bytes(b"EEZE-VRF-OUT")))
+}
+
+/// What a block's VRF is computed over: the chain's randomness so far, and the height.
+pub fn vrf_input(randomness: &Hash, height: u64) -> Vec<u8> {
+    let mut e = Enc::default();
+    e.raw(&randomness.0).u64(height);
+    e.0
+}
+
+// ---------------------------------------------------------------- finality votes
+
+/// A validator saying "I accept this block". Once validators with more than 2/3 of the stake
+/// say it about the same block, that block is final and no fork can ever replace it.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Vote {
+    pub height: u64,
+    pub block: Hash,
+    pub voter: PubKey,
+    pub sig: Sig,
+}
+
+impl Vote {
+    pub fn signing_bytes(chain_id: &str, height: u64, block: &Hash) -> Vec<u8> {
+        let mut e = Enc::default();
+        e.raw(b"EEZE-VOTE")
+            .bytes(chain_id.as_bytes())
+            .u64(height)
+            .raw(&block.0);
+        e.0
+    }
+    pub fn new(chain_id: &str, key: &Keypair, height: u64, block: Hash) -> Vote {
+        Vote {
+            height,
+            block,
+            voter: key.public(),
+            sig: key.sign(&Vote::signing_bytes(chain_id, height, &block)),
+        }
+    }
+    pub fn verify(&self, chain_id: &str) -> bool {
+        self.voter.verify(
+            &Vote::signing_bytes(chain_id, self.height, &self.block),
+            &self.sig,
+        )
+    }
+    pub fn encode(&self, e: &mut Enc) {
+        e.u64(self.height)
+            .raw(&self.block.0)
+            .raw(&self.voter.0)
+            .raw(&self.sig.0);
+    }
+}
+
+/// The votes that make a block final, carried inside a later block so anyone can check them.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Commit {
+    pub height: u64,
+    pub block: Hash,
+    pub votes: Vec<Vote>,
+}
+
+impl Commit {
+    pub fn root(c: &Option<Commit>) -> Hash {
+        match c {
+            None => Hash::default(),
+            Some(c) => {
+                let mut e = Enc::default();
+                e.u64(c.height).raw(&c.block.0).u32(c.votes.len() as u32);
+                for v in &c.votes {
+                    v.encode(&mut e);
+                }
+                hash_with("EEZE-COMMIT", &e.0)
+            }
+        }
     }
 }
 
@@ -167,6 +318,7 @@ impl Enc {
 /// What a transaction does.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[allow(clippy::large_enum_variant)] // evidence txs carry two headers; they are rare
 pub enum TxKind {
     /// Send CTDY to someone.
     Transfer { to: Address, amount: u64 },
@@ -177,9 +329,17 @@ pub enum TxKind {
     /// Put a WASM smart contract on the chain.
     Deploy { code: Bytes, args: Bytes },
     /// Run a smart contract, optionally sending it CTDY.
-    Call { contract: Address, amount: u64, args: Bytes },
+    Call {
+        contract: Address,
+        amount: u64,
+        args: Bytes,
+    },
     /// Proof that a validator signed two different blocks for the same slot. Gets them slashed.
     Evidence { a: SignedHeader, b: SignedHeader },
+    /// Register the VRF key used when this account makes staking blocks.
+    SetValidatorKey { vrf_key: PubKey },
+    /// Proof that a validator voted for two different blocks at the same height. Gets them slashed.
+    VoteEvidence { a: Vote, b: Vote },
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -223,7 +383,11 @@ impl Tx {
             TxKind::Deploy { code, args } => {
                 e.u8(3).bytes(&code.0).bytes(&args.0);
             }
-            TxKind::Call { contract, amount, args } => {
+            TxKind::Call {
+                contract,
+                amount,
+                args,
+            } => {
                 e.u8(4).raw(&contract.0).u64(*amount).bytes(&args.0);
             }
             TxKind::Evidence { a, b } => {
@@ -232,6 +396,14 @@ impl Tx {
                     .raw(&a.sig.0)
                     .bytes(&b.header.encode())
                     .raw(&b.sig.0);
+            }
+            TxKind::SetValidatorKey { vrf_key } => {
+                e.u8(6).raw(&vrf_key.0);
+            }
+            TxKind::VoteEvidence { a, b } => {
+                e.u8(7);
+                a.encode(&mut e);
+                b.encode(&mut e);
             }
         }
         e.0
@@ -246,8 +418,17 @@ impl Tx {
         kind: TxKind,
     ) -> Tx {
         let from = key.public();
-        let sig = key.sign(&Tx::signing_bytes(chain_id, &from, nonce, gas_limit, gas_price, &kind));
-        Tx { from, nonce, gas_limit, gas_price, kind, sig }
+        let sig = key.sign(&Tx::signing_bytes(
+            chain_id, &from, nonce, gas_limit, gas_price, &kind,
+        ));
+        Tx {
+            from,
+            nonce,
+            gas_limit,
+            gas_price,
+            kind,
+            sig,
+        }
     }
 
     pub fn verify(&self, chain_id: &str) -> bool {
@@ -264,7 +445,14 @@ impl Tx {
 
     pub fn hash(&self) -> Hash {
         // The chain id is already inside the signature, so the hash doesn't need it again.
-        let mut b = Tx::signing_bytes("", &self.from, self.nonce, self.gas_limit, self.gas_price, &self.kind);
+        let mut b = Tx::signing_bytes(
+            "",
+            &self.from,
+            self.nonce,
+            self.gas_limit,
+            self.gas_price,
+            &self.kind,
+        );
         b.extend_from_slice(&self.sig.0);
         hash_with("EEZE-TXID", &b)
     }
@@ -289,6 +477,11 @@ pub struct Header {
     pub nonce: u64,
     /// Proof of stake: which try this is. Goes up when the chosen validator misses its turn.
     pub round: u32,
+    /// Proof of stake: the producer's VRF reveal for this height, and its proof.
+    pub vrf_preout: Hash,
+    pub vrf_proof: Sig,
+    /// Hash of the finality votes this block carries (all zeros if none).
+    pub commit_root: Hash,
 }
 
 impl Header {
@@ -303,7 +496,10 @@ impl Header {
             .raw(&self.producer.0)
             .u32(self.bits)
             .u64(self.nonce)
-            .u32(self.round);
+            .u32(self.round)
+            .raw(&self.vrf_preout.0)
+            .raw(&self.vrf_proof.0)
+            .raw(&self.commit_root.0);
         e.0
     }
 
@@ -320,7 +516,9 @@ pub struct SignedHeader {
 
 impl SignedHeader {
     pub fn verify(&self) -> bool {
-        self.header.producer.verify(&self.header.hash().0, &self.sig)
+        self.header
+            .producer
+            .verify(&self.header.hash().0, &self.sig)
     }
 }
 
@@ -330,6 +528,9 @@ pub struct Block {
     /// Validators sign their blocks. Mined blocks don't need to.
     pub sig: Option<Sig>,
     pub txs: Vec<Tx>,
+    /// Votes that make an earlier block final.
+    #[serde(default)]
+    pub commit: Option<Commit>,
 }
 
 impl Block {
@@ -374,11 +575,18 @@ pub fn merkle_root(leaves: &[Hash]) -> Hash {
 }
 
 /// A Merkle proof: the sibling hashes from a leaf up to the root.
-pub fn merkle_proof(leaves: &[Hash], mut index: usize) -> Vec<(Hash, bool)> {
+/// Sibling hashes from a leaf up to the root, each with whether the sibling is on the left.
+pub type MerkleProof = Vec<(Hash, bool)>;
+
+pub fn merkle_proof(leaves: &[Hash], mut index: usize) -> MerkleProof {
     let mut proof = Vec::new();
     let mut level: Vec<Hash> = leaves.to_vec();
     while level.len() > 1 {
-        let sib = if index % 2 == 0 { (index + 1).min(level.len() - 1) } else { index - 1 };
+        let sib = if index.is_multiple_of(2) {
+            (index + 1).min(level.len() - 1)
+        } else {
+            index - 1
+        };
         proof.push((level[sib], index % 2 == 1));
         level = level
             .chunks(2)

@@ -3,39 +3,52 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#E7EFE6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0F1918" media="(prefers-color-scheme: dark)" />
     <title>EEZE Chain</title>
-    <meta name="description" content="Explorer and wallet for EEZE Chain and its coin, CoTdy (CTDY)." />
+    <meta name="description" content="A blockchain you can open, use and try to break. Six nodes run right in the page: send CoTdy, buy into a tokenized Treasury bill fund, or attack the network." />
     <link rel="icon" href="brand/eeze-chain-icon.svg" />
   </head>
   <body>
+    <a class="skip" href="#view">Skip to content</a>
     <header class="top">
-      <a class="brand" id="brand" href="#/" aria-label="EEZE Chain home"></a>
-      <nav aria-label="Main">
-        <a href="#/">Live chain</a>
-        <a href="#/blocks">Blocks</a>
-        <a href="#/wallet">Wallet</a>
-        <a href="#/assets">Assets</a>
-        <a href="#/validators">Validators</a>
-      </nav>
-      <button class="node-pill" id="node-pill" type="button" title="Change which node this page talks to">
-        <span class="dot" id="node-dot"></span><span id="node-label">connecting</span>
-      </button>
+      <div class="top-in">
+        <a class="brand" id="brand" href="#/" aria-label="EEZE Chain home"></a>
+        <nav aria-label="Main">
+          <a href="#/">Live chain</a>
+          <a href="#/wallet">Wallet</a>
+          <a href="#/assets">Assets</a>
+          <a href="#/blocks">Blocks</a>
+          <a href="#/validators">Validators</a>
+          <a href="#/lab" id="nav-lab">Break it</a>
+          <a href="#/about">How it works</a>
+        </nav>
+        <button class="node-pill" id="node-pill" type="button" title="Change where this page gets the chain from">
+          <span class="dot" id="node-dot"></span><span id="node-label">connecting</span>
+        </button>
+      </div>
     </header>
     <main id="view" tabindex="-1"></main>
     <footer class="foot">
-      <p>
-        EEZE Chain is a student project for learning. CoTdy (CTDY) has no real-world value and is never sold.
-        <a href="https://github.com/arjunramaswamy71-lgtm/eeze-chain">Source code</a>
-      </p>
+      <div class="wrap">
+        <p>EEZE Chain is a free student research project from EEZE Research. CoTdy (CTDY) has no real-world value and is never sold. Nothing here is financial advice.</p>
+        <p><a href="https://github.com/arjunramaswamy71-lgtm/eeze-chain">Source code on GitHub</a></p>
+      </div>
     </footer>
     <dialog id="node-dialog">
       <form method="dialog" id="node-form">
+        <h2>Where this page gets the chain from</h2>
+        <fieldset>
+          <legend class="sr">Source</legend>
+          <label class="choice"><input type="radio" name="mode" id="mode-demo" value="demo" /> The demo network, running inside this page</label>
+          <label class="choice"><input type="radio" name="mode" id="mode-node" value="node" /> A node you're running</label>
+        </fieldset>
         <label for="node-url">Node address</label>
-        <input id="node-url" type="url" placeholder="http://127.0.0.1:8001" required />
+        <input id="node-url" type="url" placeholder="http://127.0.0.1:8001" />
         <p class="hint">Start one with <code>eeze node --mine --key seed:arjun</code>, then use its API port.</p>
         <div class="row">
-          <button value="cancel" formnovalidate class="ghost">Cancel</button>
-          <button value="ok">Connect</button>
+          <button value="cancel" formnovalidate class="btn quiet">Cancel</button>
+          <button value="ok" class="btn">Connect</button>
         </div>
       </form>
     </dialog>

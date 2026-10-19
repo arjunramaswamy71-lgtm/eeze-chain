@@ -1,5 +1,6 @@
 [workspace]
 members = ["core", "node"]
+exclude = ["core/fuzz", "wasm"]
 resolver = "2"
 
 [profile.release]

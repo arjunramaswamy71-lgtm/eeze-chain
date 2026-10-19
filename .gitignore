@@ -5,3 +5,4 @@ sim/testnet-data/
 wallet.key
 *.key
 .env
+.vscode/

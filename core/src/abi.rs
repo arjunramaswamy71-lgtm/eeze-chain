@@ -73,7 +73,9 @@ pub fn decode(mut b: &[u8]) -> Result<Vec<Arg>, String> {
     while !b.is_empty() {
         let tag = take(&mut b, 1)?[0];
         match tag {
-            1 => out.push(Arg::U64(u64::from_le_bytes(take(&mut b, 8)?.try_into().unwrap()))),
+            1 => out.push(Arg::U64(u64::from_le_bytes(
+                take(&mut b, 8)?.try_into().unwrap(),
+            ))),
             2 | 4 => {
                 let n = u32::from_le_bytes(take(&mut b, 4)?.try_into().unwrap()) as usize;
                 let v = take(&mut b, n)?;
@@ -95,12 +97,20 @@ pub fn parse_cli(items: &[String]) -> Result<Vec<Arg>, String> {
     items
         .iter()
         .map(|s| {
-            let (t, v) = s.split_once(':').ok_or(format!("'{s}' should look like type:value"))?;
+            let (t, v) = s
+                .split_once(':')
+                .ok_or(format!("'{s}' should look like type:value"))?;
             Ok(match t {
-                "u64" | "n" => Arg::U64(v.replace('_', "").parse().map_err(|_| format!("bad number {v}"))?),
+                "u64" | "n" => Arg::U64(
+                    v.replace('_', "")
+                        .parse()
+                        .map_err(|_| format!("bad number {v}"))?,
+                ),
                 "addr" | "a" => Arg::Addr(v.parse()?),
                 "str" | "s" => Arg::Str(v.to_string()),
-                "bytes" | "b" => Arg::Bytes(hex::decode(v.trim_start_matches("0x")).map_err(|e| e.to_string())?),
+                "bytes" | "b" => {
+                    Arg::Bytes(hex::decode(v.trim_start_matches("0x")).map_err(|e| e.to_string())?)
+                }
                 _ => return Err(format!("unknown type {t}")),
             })
         })

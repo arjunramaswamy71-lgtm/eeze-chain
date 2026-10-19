@@ -70,6 +70,10 @@ def address(seed):
     return cli(0, "address", "--key", f"seed:{seed}")
 
 
+def vrf_key(seed):
+    return cli(0, "address", "--key", f"seed:{seed}", "--vrf")
+
+
 def start(name, port, apiport, key, *extra, peers=()):
     args = [str(EEZE), "node", "--name", name, "--port", str(port), "--api", str(apiport),
             "--key", f"seed:{key}", "--data", str(WORK / name), "--genesis", str(WORK / "genesis.json")]
@@ -134,7 +138,7 @@ def main():
     g["pos_height"] = POS_HEIGHT
     g["unbonding_blocks"] = 10
     g["alloc"].append([address("eve"), 1_000 * COIN])
-    g["stakes"] = [[address("mallory"), 3_000 * COIN]]
+    g["stakes"] = [[address("mallory"), 3_000 * COIN, vrf_key("mallory")]]
     (WORK / "genesis.json").write_text(json.dumps(g, indent=2))
 
     who = {s: address(s) for s in ["arjun", "bank", "alice", "bob", "eve", "eve-2", "mallory"]}
@@ -216,6 +220,11 @@ def main():
         name = next((k for k, a in who.items() if a == v["address"]), v["address"][:10])
         say(f"   {name:8} stake {ctdy(v['stake']):>16}   chance {v['share']*100:5.1f}%   recent blocks {v['recent_blocks']}")
     note(consensus=st["consensus"], validators=vals["validators"])
+    wait_until(lambda: api(8101, "/status")["finalized"]["height"] > POS_HEIGHT, 60, "finality")
+    fin = api(8101, "/status")["finalized"]
+    say(f"Validators vote on each block. Block #{fin['height']} has votes from over 2/3 of the stake,")
+    say("so it's final: no fork can replace it, however much work or stake is behind it.")
+    note(finalized=fin)
 
     # ------------------------------------------------------------------
     step("5. Mallory signs two different blocks for the same turn")
@@ -231,23 +240,52 @@ def main():
     stop("mallory")
 
     # ------------------------------------------------------------------
-    step("6. The bank tokenizes a building")
-    wasm = ROOT / "contracts" / "build" / "rwa.wasm"
-    out = cli(8104, "deploy", "--key", "seed:bank", "--wasm", str(wasm),
-              "str:Blacksburg Main St Building", "str:BMSB", "u64:1000", f"u64:{10 * COIN}", "str:deed sha256 9f2c41e1")
-    asset = out.split("contract address ")[-1].strip()
-    say(f"contract {asset}: 1,000 shares at 10 CTDY each")
-    cli(8104, "call", "--key", "seed:bank", "--contract", asset, "--method", "approve", f"addr:{who['alice']}")
-    say("bank approves Alice (KYC)")
-    say(cli(8102, "call", "--key", "seed:alice", "--contract", asset, "--method", "buy", "--value", "1000", "u64:100"))
-    say("Alice buys 100 shares for 1,000 CTDY")
-    print(cli(8102, "call", "--key", "seed:bob", "--contract", asset, "--method", "buy", "--value", "10", "u64:1", check=False))
-    say("Bob tries to buy without KYC: refused")
-    cli(8104, "call", "--key", "seed:bank", "--contract", asset, "--method", "distribute", "--value", "500")
-    owed = cli(8102, "query", "--contract", asset, "--method", "claimable", f"addr:{who['alice']}")
-    say(f"bank pays 500 CTDY of rent; Alice (10% of shares) can claim {int(owed) / COIN} CTDY")
-    say(cli(8102, "call", "--key", "seed:alice", "--contract", asset, "--method", "claim"))
-    note(contract=asset, alice_claimable=int(owed))
+    step("6. The bank tokenizes a Treasury bill fund and a building")
+    build = ROOT / "contracts" / "build"
+
+    def deploy(wasm, *args):
+        out = cli(8104, "deploy", "--key", "seed:bank", "--wasm", str(build / wasm), *args)
+        return out.split("contract address ")[-1].strip()
+
+    def call(port, who_, contract, method, *args, value="0", check=True):
+        return cli(port, "call", "--key", f"seed:{who_}", "--contract", contract, "--method", method, "--value", value, *args, check=check)
+
+    def ask(contract, method, *args, port=8102):
+        # Ask the node that confirmed the last transaction, so the answer includes it.
+        return cli(port, "query", "--contract", contract, "--method", method, *args).split()
+
+    registry = deploy("identity.wasm")
+    say(f"identity registry {registry}")
+    call(8104, "bank", registry, "add_issuer", f"addr:{who['bank']}", "u64:5")
+    call(8104, "bank", registry, "register", f"addr:{who['alice']}", "u64:1", "u64:840")
+    call(8104, "bank", registry, "add_claim", "u64:1", "u64:1", "u64:0")
+    call(8104, "bank", registry, "add_claim", "u64:1", "u64:4", "u64:0")
+    say("Alice passes KYC and AML checks. Bob doesn't.")
+
+    fund = deploy("security.wasm", "str:EEZE Treasury Bill Fund", "str:ETBF", "str:fund", f"addr:{registry}",
+                  "u64:5", f"u64:{COIN}", "u64:1000000", "str:prospectus sha256 51b0aa77")
+    say(f"T-bill fund {fund}: 1 CTDY a share")
+    say(call(8102, "alice", fund, "buy", "u64:5000", value="5000"))
+    say("Alice puts 5,000 CTDY into the fund")
+    print(call(8102, "bob", fund, "buy", "u64:10", value="10", check=False))
+    say("Bob tries without KYC: refused")
+    daily = 5_000 * 45 / 1000 / 365
+    say(call(8104, "bank", fund, "distribute", value=f"{daily:.8f}"))
+    owed = int(ask(fund, "claimable", f"addr:{who['alice']}", port=8104)[0])
+    say(f"one day of interest at 4.5% a year on the fund's 5,000 CTDY ({daily:.4f} CTDY) is paid out per share; "
+        f"Alice can collect {owed / COIN:.6f} CTDY")
+    say(call(8102, "alice", fund, "redeem", "u64:1000"))
+    say("Alice redeems 1,000 shares for 1,000 CTDY from the fund's reserve")
+
+    building = deploy("security.wasm", "str:Main St Building", "str:MSB", "str:property", f"addr:{registry}",
+                      "u64:5", f"u64:{10 * COIN}", "u64:1000", "str:deed sha256 9f2c41e1")
+    call(8104, "bank", building, "add_liquidity", "u64:200", value="2000")
+    say("the bank opens a market for building shares: 200 shares + 2,000 CTDY in the pool")
+    quote = int(ask(building, "quote_buy", f"u64:{100 * COIN}", port=8104)[0])
+    cost = int(ask(building, "cost_to_buy", f"u64:{quote}", port=8104)[0])
+    say(call(8102, "alice", building, "swap_buy", f"u64:{quote}", value="100"))
+    say(f"Alice buys {quote} shares from the market for {cost / COIN:.4f} CTDY (she sent 100; the change comes back)")
+    note(registry=registry, fund=fund, building=building, alice_interest=owed, alice_market_shares=quote, alice_market_cost=cost)
 
     # ------------------------------------------------------------------
     step("7. Does every node agree?")

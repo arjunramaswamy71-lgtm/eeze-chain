@@ -1,4 +1,8 @@
 import { defineConfig } from "vite";
 
-// Relative paths, so the built site works when the node serves it and when it's hosted in a subfolder.
-export default defineConfig({ base: "./", build: { target: "es2022" } });
+// The built site goes to /docs, which is what GitHub Pages serves. Relative paths, so it works
+// there (in a subfolder) and when a node serves it.
+export default defineConfig({
+  base: "./",
+  build: { target: "es2022", outDir: "../docs", emptyOutDir: true },
+});

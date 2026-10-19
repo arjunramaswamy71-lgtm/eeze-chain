@@ -10,7 +10,7 @@
     {
       "title": "3. 51% attack: Eve tries to spend the same 900 CTDY twice",
       "double_spend_worked": true,
-      "honest_height": 35,
+      "honest_height": 36,
       "attacker_height": 38,
       "bob_payment": "erased",
       "eve2_balance": 90000000000
@@ -21,41 +21,46 @@
       "validators": [
         {
           "address": "0x3f4c109ca3763aa3953dff6468727850851d166e",
-          "recent_blocks": 1,
-          "share": 0.23255813953488372,
+          "recent_blocks": 2,
+          "recent_votes": 14,
+          "share": 0.25,
           "slashed": false,
-          "stake": 500000000000
-        },
-        {
-          "address": "0x7121c1b8fd776dafe5c026f527ee66a9efdf2878",
-          "recent_blocks": 1,
-          "share": 0.06976744186046512,
-          "slashed": true,
-          "stake": 150000000000
+          "stake": 500000000000,
+          "vrf_key": "0x5cda35e139920e2120fc7b1f4e3f00069d4c3b80641beea0bcd3e0fd4af1fd30"
         },
         {
           "address": "0xf1bdb25f8b3a0adef0d2024603e2f761515327f1",
-          "recent_blocks": 14,
-          "share": 0.6976744186046512,
+          "recent_blocks": 12,
+          "recent_votes": 14,
+          "share": 0.75,
           "slashed": false,
-          "stake": 1500000000000
+          "stake": 1500000000000,
+          "vrf_key": "0x3e342b50c9b5ddb06d2cca508740179a674167b08d2e5a14bf813fbf867e456b"
         }
-      ]
+      ],
+      "finalized": {
+        "hash": "0xa76d168360c760cf13a056f5565d664028399cceb82224e5b0e24faa8280d2b1",
+        "height": 74
+      }
     },
     {
       "title": "5. Mallory signs two different blocks for the same turn",
-      "mallory_stake_after": 150000000000,
-      "burned": 135000000000
+      "mallory_stake_after": 75000000000,
+      "burned": 202500000000
     },
     {
-      "title": "6. The bank tokenizes a building",
-      "contract": "0x949b2f0bb89e059ad80a9035fdb139cda963d083",
-      "alice_claimable": 5000000000
+      "title": "6. The bank tokenizes a Treasury bill fund and a building",
+      "registry": "0xe9ef7e9a8246f79d0363f7ab75b16011daa88d67",
+      "fund": "0x3e577f0ce0f52b01e7b9f8de740624b9a62616e8",
+      "building": "0x89c3277a359268daa4ee200cb9d34fad6b349e20",
+      "alice_interest": 61643836,
+      "alice_market_shares": 9,
+      "alice_market_cost": 9452441093
     },
     {
       "title": "7. Does every node agree?",
       "all_agree": true,
-      "final_height": 84
+      "final_height": 91
     }
   ],
   "wallets": {

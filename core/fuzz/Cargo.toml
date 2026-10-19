@@ -1,0 +1,43 @@
+[package]
+name = "eeze-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+eeze_core = { path = ".." }
+serde_json = "1"
+
+[workspace]
+
+[[bin]]
+name = "block"
+path = "fuzz_targets/block.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "transaction"
+path = "fuzz_targets/transaction.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "contract"
+path = "fuzz_targets/contract.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "abi"
+path = "fuzz_targets/abi.rs"
+test = false
+doc = false
+bench = false

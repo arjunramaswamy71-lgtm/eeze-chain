@@ -15,6 +15,8 @@
 @external("env", "transfer") declare function _transfer(ap: i32, amount: u64): i32;
 @external("env", "emit") declare function _emit(tp: i32, tl: i32, dp: i32, dl: i32): void;
 @external("env", "revert") declare function _revert(ptr: i32, len: i32): void;
+@external("env", "static_call") declare function _static_call(ap: i32, ip: i32, il: i32): i32;
+@external("env", "return_data") declare function _return_data(ptr: i32): void;
 
 function ptr(a: Uint8Array): i32 {
   return <i32>a.dataStart;
@@ -72,6 +74,16 @@ export function height(): u64 { return _height(); }
 export function pay(to: Uint8Array, amount: u64): void {
   if (amount == 0) return;
   require(_transfer(ptr(to), amount) == 0, "contract doesn't have enough CTDY");
+}
+
+/** Asks another contract something. Read-only: the other contract can't change anything.
+ *  Returns its answer, or null if the call failed. */
+export function staticCall(addr: Uint8Array, input: Uint8Array): Uint8Array | null {
+  const n = _static_call(ptr(addr), ptr(input), input.length);
+  if (n < 0) return null;
+  const out = new Uint8Array(n);
+  if (n > 0) _return_data(ptr(out));
+  return out;
 }
 
 export function emit(topic: string, data: Uint8Array): void {
@@ -179,6 +191,26 @@ export class Reader {
   more(): bool {
     return this.pos < this.b.length;
   }
+  bool(what: string): bool {
+    return this.u64(what) != 0;
+  }
+}
+
+/** Integer square root, for sizing the first liquidity deposit. */
+export function isqrt(n: u64): u64 {
+  if (n < 2) return n;
+  let x = n;
+  let y = (x + 1) >> 1;
+  while (y < x) {
+    x = y;
+    y = (x + n / x) >> 1;
+  }
+  return x;
+}
+
+/** a * b / c without overflowing in between. */
+export function mulDiv(a: u64, b: u64, c: u64): u64 {
+  return U128.mul(a, b).div(c);
 }
 
 /** Builds a return value in the same format. */
