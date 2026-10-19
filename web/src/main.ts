@@ -827,7 +827,7 @@ async function cotdyView() {
         <div class="coin-copy">
           <h1>CoTdy</h1>
           <p class="tagline">Loyal to the last block.</p>
-          <p class="lede">Two dogs, one ledger, zero bribes. CoTdy is the coin of EEZE Chain, named after Coco and Teddy: the guards who once stopped a 51% attack by eating the evidence.</p>
+          <p class="lede">Two dogs. One blockchain. Zero bribes. CoTdy is the coin of EEZE Chain, named after Coco and Teddy, the guards who stopped a hacker by eating the evidence. Yes, really. Keep reading.</p>
           <div class="row"><a class="btn" href="#/wallet">Hold some in the wallet</a><a class="btn quiet" href="#/cotdy" id="to-story">Read what happened</a></div>
         </div>
         <div class="coin-stage" id="coin"><p class="coin-hint">Drag the coin to flip it.</p></div>
@@ -844,7 +844,7 @@ async function cotdyView() {
               <div><dt>Loyalty</dt><dd>100%</dd></div>
               <div><dt>Bribes accepted</dt><dd>0</dd></div>
               <div><dt>Longest she has looked at a tennis ball</dt><dd>11 minutes</dd></div>
-              <div><dt>Facial expressions</dt><dd>1</dd></div>
+              <div><dt>Facial expressions</dt><dd>1 (unbothered)</dd></div>
             </dl>
           </figcaption>
         </figure>
@@ -855,7 +855,7 @@ async function cotdyView() {
               <div><dt>Loyalty</dt><dd>100%</dd></div>
               <div><dt>Hard drives eaten</dt><dd>3</dd></div>
               <div><dt>Private keys eaten</dt><dd>1, all 24 words</dd></div>
-              <div><dt>Plans</dt><dd>None, ever</dd></div>
+              <div><dt>Thoughts</dt><dd>0, head empty</dd></div>
             </dl>
           </figcaption>
         </figure>
@@ -863,20 +863,28 @@ async function cotdyView() {
     </section>
 
     <section class="story" id="story">
-      <h2>The night the chain almost broke</h2>
+      <h2>The night Coco and Teddy saved the blockchain (kinda)</h2>
       <ol class="chapters">
         <li><h3>The job</h3>
-          <p>Coco and Teddy guard Block #0 of EEZE Chain, the very first page of the ledger. The pay is one treat per block. Coco reads every transaction that comes through. Teddy has never read anything, but he has eaten three hard drives and a stapler, and nobody has ever tried to rob him twice.</p></li>
+          <p>Coco and Teddy have one job: guard the blockchain. Think of it as a giant notebook the whole internet shares, where every page says who owns what. Nobody's allowed to rip a page out. That's the entire point.</p>
+          <p>Pay is one treat per page. Coco is that girl. She reads every page, never blinks, and has been unimpressed since birth. Teddy is a himbo. He has eaten three hard drives, a stapler and an AirPod he still swears was a snack. No thoughts, head empty. Full-time security.</p></li>
         <li><h3>3:07 a.m.</h3>
-          <p>A stranger in a hoodie walks in with 51% of all the computers in the world and a second version of history, one where none of it happened. Not the payments. Not the blocks. Not the treats. "Legally," he says, "you were never paid." Teddy begins to grieve, loudly, and does not stop for forty minutes.</p></li>
+          <p>A guy in a hoodie kicks the door in. He controls 51% of all the computers on the network, which in crypto basically means "I am him." He's here to rewrite the notebook: a new version where he's rich, everyone else is broke, and the dogs were never paid. Not one treat. Ever.</p>
+          <p>"Legally," he says, "you've been working for free." Teddy screams for forty damn minutes. Not barking. Screaming. The neighbors reported it as a car alarm. It also scared the shit out of him, which, spoiler, becomes important later.</p></li>
         <li><h3>The Orphanage</h3>
-          <p>The stranger's fake chain is longer, so for one terrible hour it wins. Coco and Teddy are blamed for a double spend they didn't do and thrown into the Orphanage, where blocks with no parent go to be forgotten. It's cold. It smells like 2017. An old block in the corner tells them about a man called Satoshi who built the first chain, then vanished and was never seen again. Teddy asks if Satoshi was also a good boy. Nobody answers.</p></li>
-        <li><h3>Teddy panics</h3>
-          <p>On the way out, Teddy panics and eats the first thing he sees: a slip of paper with the stranger's private key on it. All 24 words. "That," says Coco, without blinking, "is cold storage." The stranger can't sign anything now. His fake chain stops growing, because the only way to add to it is inside a four-kilo Pomeranian.</p></li>
+          <p>His fake notebook is longer, and on a blockchain the longest version wins, at least for now. So the system decides the dogs are the frauds, and they get thrown into the Orphanage, the place where blocks with no parents go to die. Yes, that's what it's really called. Crypto people name things like it's a horror game.</p>
+          <p>It's dark. It smells like 2017. In the corner, an ancient block from 2009 is rocking back and forth, and it tells them about Satoshi: the guy who invented Bitcoin, mined about a million of them, then ghosted the entire planet. Never spent a coin. Never came back. Nobody even knows who he was.</p>
+          <p>Teddy whispers, "Was Satoshi a good boy?" The old block stares into the void. "Nobody knows, man. Nobody knows."</p></li>
+        <li><h3>Teddy eats the key</h3>
+          <p>They're getting dragged out when the hoodie guy pulls out his private key: the secret password that lets him sign every page of his fake notebook. Twenty-four words on a little slip of paper.</p>
+          <p>Teddy sees paper. Teddy has never once in his life not eaten paper. Gone. Swallowed whole. Ate and left no crumbs, literally. The guy drops to his knees. Coco turns and looks straight at the camera like she's on The Office. "Congrats," she says. "That's cold storage now."</p>
+          <p>The man's entire empire is now inside a four-kilo Pomeranian. Teddy is officially a hardware wallet. A soft, fluffy hardware wallet. Without the key, the hoodie guy can't sign anything, and his fake notebook just... stops.</p></li>
         <li><h3>The vote</h3>
-          <p>With no new blocks, the fake history stalls, and the honest validators keep voting on the real one. At block #4,096, more than two thirds of them sign. The real ledger is stamped final, and on EEZE Chain final means nobody can rewrite it, not with every computer on Earth. The stranger tries one last thing. He offers Coco a tennis ball. She looks at it for eleven minutes. Then she says no.</p></li>
+          <p>Meanwhile, the honest computers keep checking the real notebook, page by page. Once more than two thirds of them agree a page is legit, it gets stamped final. And final means final. Not "final_final_v2". Nobody can ever rewrite it again, not even with every computer on Earth.</p>
+          <p>Hoodie guy has one move left. He pulls out a tennis ball. "Coco. Let's make a deal." She stares at it for eleven straight minutes. Eleven. Her whole body is shaking. Teddy is sobbing. The chat is going feral. Then she says no. Unbothered. Moisturized. Loyal.</p></li>
         <li><h3>Two days later</h3>
-          <p>The 24 words came back out. Nobody was willing to check them. The stranger's coins are lost forever, which is the closest thing crypto has to justice. Coco and Teddy went back to Block #0 and got their back pay, with interest, and every coin on the chain now carries their faces. That coin is CoTdy.</p></li>
+          <p>Teddy made a very large deposit. The 24 words came back out. Nobody volunteered to read them. The hoodie guy's money is gone forever, which is the closest thing crypto has ever had to justice.</p>
+          <p>Coco and Teddy got their back pay, every single treat plus interest, and Teddy ate the receipt. And that's how their faces ended up on the coin. CoTdy: the only coin whose entire security plan is a dog who will eat the evidence and a dog who cannot be bought.</p></li>
       </ol>
       <p class="moral">Loyal to the last block.</p>
     </section>
